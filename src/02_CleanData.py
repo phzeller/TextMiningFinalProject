@@ -9,12 +9,13 @@ nltk.download('omw-1.4')
 
 minutes = pd.read_pickle('../data/FOMC/minutes.pickle')
 
+
 # Data cleaning:
 # Tokenization, cleaning, normalization, stemming, stop-word removal, lemmatization
 
 def preprocessing(text):
     # 1. Tokenization: text preprocessing step, which assumes splitting text into tokens
-    ret = nltk.word_tokenize(text) # TODO: discuss if tokenizing on sentence level also makes sense
+    ret = nltk.word_tokenize(text)  # TODO: discuss if tokenizing on sentence level also makes sense
     # 2. Cleaning: remove punctuation
     ret = [t for t in ret if t not in string.punctuation]
     # 3. Stop words removal
