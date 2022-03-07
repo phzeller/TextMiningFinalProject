@@ -37,7 +37,7 @@ class FomcMinutes(FomcBase):
         r = requests.get(self.calendar_url)
         soup = BeautifulSoup(r.text, 'html.parser')
 
-        # Getting links from current page. Meetin scripts are not available.
+        # Getting links from current page. Meeting scripts are not available.
         if self.verbose: print("Getting links for minutes...")
         contents = soup.find_all('a', href=re.compile('^/monetarypolicy/fomcminutes\d{8}.htm'))
 
@@ -47,43 +47,40 @@ class FomcMinutes(FomcBase):
         self.dates = [datetime.strptime(self._date_from_link(x), '%Y-%m-%d') for x in self.links]
         if self.verbose: print("{} links found in the current page.".format(len(self.links)))
 
-        print("Getting links from archive pages...")
+        # Archived before 2017
+        if from_year <= 2016:
+            print("Getting links from archive pages...")
+            for year in range(from_year, 2017):
+                yearly_contents = []
+                fomc_yearly_url = self.base_url + '/monetarypolicy/fomchistorical' + str(year) + '.htm'
+                r_year = requests.get(fomc_yearly_url)
+                soup_yearly = BeautifulSoup(r_year.text, 'html.parser')
+                yearly_contents = soup_yearly.find_all('a', href=re.compile('(^/monetarypolicy/fomcminutes|^/fomc/minutes|^/fomc/MINUTES)'))
+                for yearly_content in yearly_contents:
+                    self.links.append(yearly_content.attrs['href'])
+                    self.speakers.append(self._speaker_from_date(self._date_from_link(yearly_content.attrs['href'])))
+                    self.titles.append('FOMC Meeting Minutes')
+                    self.dates.append(datetime.strptime(self._date_from_link(yearly_content.attrs['href']), '%Y-%m-%d'))
+                    # Sometimes minutes carries the first day of the meeting before 2000, so update them to the 2nd day
+                    if self.dates[-1] == datetime(1996,1,30):
+                        self.dates[-1] = datetime(1996,1,31)
+                    elif self.dates[-1] == datetime(1996,7,2):
+                        self.dates[-1] = datetime(1996,7,3)
+                    elif self.dates[-1] == datetime(1997,2,4):
+                        self.dates[-1] = datetime(1997,2,5)
+                    elif self.dates[-1] == datetime(1997,7,1):
+                        self.dates[-1] = datetime(1997,7,2)
+                    elif self.dates[-1] == datetime(1998,2,3):
+                        self.dates[-1] = datetime(1998,2,4)
+                    elif self.dates[-1] == datetime(1998,6,30):
+                        self.dates[-1] = datetime(1998,7,1)
+                    elif self.dates[-1] == datetime(1999,2,2):
+                        self.dates[-1] = datetime(1999,2,3)
+                    elif self.dates[-1] == datetime(1999,6,29):
+                        self.dates[-1] = datetime(1999,6,30)
 
-        # Determine current year
-        currentDateTime = datetime.now()
-        date = currentDateTime.date()
-        year = int(date.strftime("%Y"))
-        print('Year: ' + str(year))
-        for year in range(from_year, year+1):
-            yearly_contents = []
-            fomc_yearly_url = self.base_url + '/monetarypolicy/fomchistorical' + str(year) + '.htm'
-            r_year = requests.get(fomc_yearly_url)
-            soup_yearly = BeautifulSoup(r_year.text, 'html.parser')
-            yearly_contents = soup_yearly.find_all('a', href=re.compile('(^/monetarypolicy/fomcminutes|^/fomc/minutes|^/fomc/MINUTES)'))
-            for yearly_content in yearly_contents:
-                self.links.append(yearly_content.attrs['href'])
-                self.speakers.append(self._speaker_from_date(self._date_from_link(yearly_content.attrs['href'])))
-                self.titles.append('FOMC Meeting Minutes')
-                self.dates.append(datetime.strptime(self._date_from_link(yearly_content.attrs['href']), '%Y-%m-%d'))
-                # Sometimes minutes carries the first day of the meeting before 2000, so update them to the 2nd day
-                if self.dates[-1] == datetime(1996,1,30):
-                    self.dates[-1] = datetime(1996,1,31)
-                elif self.dates[-1] == datetime(1996,7,2):
-                    self.dates[-1] = datetime(1996,7,3)
-                elif self.dates[-1] == datetime(1997,2,4):
-                    self.dates[-1] = datetime(1997,2,5)
-                elif self.dates[-1] == datetime(1997,7,1):
-                    self.dates[-1] = datetime(1997,7,2)
-                elif self.dates[-1] == datetime(1998,2,3):
-                    self.dates[-1] = datetime(1998,2,4)
-                elif self.dates[-1] == datetime(1998,6,30):
-                    self.dates[-1] = datetime(1998,7,1)
-                elif self.dates[-1] == datetime(1999,2,2):
-                    self.dates[-1] = datetime(1999,2,3)
-                elif self.dates[-1] == datetime(1999,6,29):
-                    self.dates[-1] = datetime(1999,6,30)
+                if self.verbose: print("YEAR: {} - {} links found.".format(year, len(yearly_contents)))
 
-            if self.verbose: print("YEAR: {} - {} links found.".format(year, len(yearly_contents)))
         print("There are total ", len(self.links), ' links for ', self.content_type)
 
     def _add_article(self, link, index=None):
