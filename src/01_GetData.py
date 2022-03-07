@@ -1,6 +1,7 @@
 # Data sources
 
 import yfinance as yf
+import os
 import pandas as pd
 from fomc_get_data.FomcMinutes import FomcMinutes
 
@@ -16,9 +17,11 @@ SP500_hist.to_csv('../data/SPY.csv')
 
 # Get FED minutes
 # TODO: Check if files already exist and if they are already up-to-date; if not get the data
-# TODO: FIX 2022
 fomc = FomcMinutes()
 df_minutes = fomc.get_contents()
-df_minutes.to_csv('../data/FOMC/minutes.csv')
+
+if not os.path.exists('../data/FOMC'):
+    os.makedirs('../data/FOMC')
+df_minutes.to_csv('../data/FOMC/minutes.csv', index=False)
 
 
