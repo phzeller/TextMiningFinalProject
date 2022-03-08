@@ -13,7 +13,7 @@ def add_SP500_data(df, SP500_hist):
         tmp = SP500_hist.copy()
         tmp['Close'] = tmp['Close'].shift(periods=i)
         column_name = 'SPY: d' + str(-i) if i > 0 else 'SPY: d+' + str(-i)
-        ret[column_name] = pd.merge(left=minutes, right=SP500_hist, left_on='date', right_on='Date', how='left')[
+        ret[column_name] = pd.merge(left=minutes, right=tmp, left_on='date', right_on='Date', how='left')[
             'Close']
     return ret
 
@@ -24,7 +24,7 @@ def add_interest_rate(df, TNX_hist):
         tmp = TNX_hist.copy()
         tmp['Close'] = tmp['Close'].shift(periods=i)
         column_name = '^TNX: d' + str(-i) if i > 0 else '^TNX: d+' + str(-i)
-        ret[column_name] = pd.merge(left=minutes, right=TNX_hist, left_on='date', right_on='Date', how='left')['Close']
+        ret[column_name] = pd.merge(left=minutes, right=tmp, left_on='date', right_on='Date', how='left')['Close']
     return ret
 
 
