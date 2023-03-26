@@ -20,7 +20,7 @@ h5py==3.6.0
 idna==3.3
 importlib-metadata==4.11.3
 ipykernel==6.9.2
-ipython==8.1.1
+ipython==8.10.0
 jedi==0.18.1
 joblib==1.2.0
 jupyter-client==7.1.2
